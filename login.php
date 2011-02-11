@@ -21,7 +21,6 @@
 	require_once("header.php");
 ?>
 
-
 <?php if ($message != "") { echo "<span class='alert'>$message</span><br />"; } ?>
 
 <form style="position:relative;display:block;height:333px;width:100%;text-align:center;background:url('images/lock.png') no-repeat;background-position:center;" action="login.php" method="post">
