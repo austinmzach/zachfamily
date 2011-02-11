@@ -17,5 +17,18 @@
 		mysql_select_db($dbname);
 		
 		$query = "insert into json_test(json_data) values('" . print_r($_POST) . "')";
-	}
+	} else { ?>
+		<html>
+			<head>
+				<title>testing deploy</title>
+			</head>
+			<body>
+				<form action="deployer.php" method="post">
+					<input type="hidden" name="deploying" value="yes" />
+					<input type="hidden" name="choking" value="no" />
+					<input type="submit" value="deploy" />
+				</form>
+			</body>
+		</html>
+	<?php }
 ?>
