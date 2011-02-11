@@ -1,5 +1,13 @@
 <?php
 	if ($_POST) {
+		
+		$to = "austinmzach@gmail.com";
+		$subject = "Deployer kicked off";
+		$message = "Deploying the following commit: " . prin_r($_POST);
+		$from = "austinmzach@gmail.com";
+		$headers = "From: $from";
+		mail($to,$subject,$message,$headers);
+		
 		$hostname = 'zachfamily.db.6874509.hostedresource.com';
 		$username = 'zachfamily';
 		$password = 'August7';
