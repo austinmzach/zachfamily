@@ -31,7 +31,7 @@
 	
 	<span style="position:relative;display:block;width:400px;margin:auto;">
 		<span style="font-weight:bold;">Please enter your email address</span><br />
-		(Don't worry, you're not gonna get spammed.)
+		(Don't worry, you're not gonna get spammed)
 	</span>
 	
 	<br />
