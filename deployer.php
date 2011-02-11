@@ -3,10 +3,10 @@
 		
 		$to = "austinmzach@gmail.com";
 		$subject = "Deployer kicked off";
-		$message = "Deploying the following commit: " . prin_r($_POST);
+		$message = "Deploying the following commit: " . implode(",", $_POST);
 		$from = "austinmzach@gmail.com";
 		$headers = "From: $from";
-		mail($to,$subject,$message,$headers);
+		mail($to,$subject,$message,$headers) or die("error!");
 		
 		$hostname = 'zachfamily.db.6874509.hostedresource.com';
 		$username = 'zachfamily';
@@ -16,7 +16,8 @@
 		mysql_connect($hostname, $username, $password) or die("Error: " . mysql_error());
 		mysql_select_db($dbname);
 		
-		$query = "insert into json_test(json_data) values('" . print_r($_POST) . "')";
+		$query = "insert into json_test(json_data) values('" . implode(",", $_POST) . "')";
+		mysql_query($query) or die("what and ID10T");
 	} else { ?>
 		<html>
 			<head>
