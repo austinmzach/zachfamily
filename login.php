@@ -34,6 +34,7 @@
 	</span>
 	
 	<br />
+	<?php echo "some stuff here"; ?>
 	<br />
 	<br />
 

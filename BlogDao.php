@@ -19,34 +19,43 @@ class BlogDao {
 	    
 	    mysql_query($query) or die("Error inserting blog post: " . mysql_error());
 	    
+	    $query = "select blog_id from blog_posts where title = '" . $post['title'] . "'";
+	    $row = mysql_fetch_array(mysql_query($query)) or die ("Error retrieving blog id: " . mysql_error());
+	    $blogId = $row['blog_id'];
+	    
 	    $tags = explode(",", $tags);
 	    foreach ($tags as $tag) {
-	    	$result = mysql_query("select * from tag_cloud where tag = '$tag'");
+	    	$result = mysql_query("select * from tags where tag_name = '$tag'");
 	    	
 	    	if (mysql_num_rows($result) == 0) {
-	    		$query = "insert into tag_cloud(tag, count) values ('$tag', 0)";
-	    	} else {
-	    		$row = mysql_fetch_array($result);
-	    		$query = "update tag_cloud set count = " . ($row['count'] + 1) . " where tag = '$tag'";
+	    		$query = "insert into tags(tag_name) values ('$tag')";
+	    		mysql_query($query) or die("Error inserting new tag: " . mysql_error());
 	    	}
-	    	mysql_query($query) or die("Error inserting tags: " . mysql_error());
+	    	
+	    	$query = "select tag_id from tags where tag_name = '$tag'";
+	    	$row = mysql_fetch_array(mysql_query($query)) or die ("Error retrieving tag id: " . mysql_error());
+	    	$tagId = $row['tag_id'];
+	    	
+	    	$query = "insert into blog_tag(blog_id, tag_id) values($blogId, $tagId)";
+	    	echo $query;
+	    	mysql_query($query) or die("Error inserting blog_id and tag_id: " . mysql_error());
 	    }
 	}
 	
 	function getBlogPosts() {
-		$query = "select title, body, date_format(date, '%m/%d/%Y, %r') as formatted_date, tags from blog_posts order by date desc";
+		$query = "select blog_id, title, body, date_format(date, '%m/%d/%Y, %r') as formatted_date, tags from blog_posts order by date desc";
 		
 		$this->printBlogPosts(mysql_query($query));
 	}
 	
 	function getBlogPostsByTag($tag) {
-		$query = "select title, body, date_format(date, '%m/%d/%Y, %r') as formatted_date, tags from blog_posts where tags like '%$tag%' order by date desc";
+		$query = "select blog_id, title, body, date_format(date, '%m/%d/%Y, %r') as formatted_date, tags from blog_posts where tags like '%$tag%' order by date desc";
 		
 		$this->printBlogPosts(mysql_query($query));
 	}
 	
 	function getBlogPostsByMonth($month) {
-		$query = "select title, body, date_format(date, '%m/%d/%Y, %r') as formatted_date, tags from blog_posts where date_format(date, '%Y-%m') = '$month' order by date desc";
+		$query = "select blog_id, title, body, date_format(date, '%m/%d/%Y, %r') as formatted_date, tags from blog_posts where date_format(date, '%Y-%m') = '$month' order by date desc";
 		
 		$this->printBlogPosts(mysql_query($query));
 	}
@@ -57,10 +66,13 @@ class BlogDao {
 			echo "<span class='blogTitle'>" . $row['title'] . "</span>";
 			echo "<span class='blogDate'>" . $row['formatted_date'] . "</span></div>";
 			echo "<span class='blogBody'>" . $row['body'];
-			echo "<span class='tags'>Tags: ";
-			$tags = explode(",", $row['tags']);
-			foreach ($tags as $tag) {
-				echo "<a href='blog.php?tag=$tag'>$tag</a>, ";
+			
+			$query = "select tag_name from tags t inner join (select * from blog_tag) bt on t.tag_id = bt.tag_id where bt.blog_id = " . $row['blog_id'];
+			$tags = mysql_query($query);
+			
+			echo "<span class='tags'><b>Tags: </b>";
+			while ($tag = mysql_fetch_array($tags)) {
+				echo "<a href='blog.php?tag=" . $tag['tag_name'] . "'>" . $tag['tag_name'] . "</a>, ";
 			}
 			echo "</span><br />";
 		}
@@ -73,23 +85,23 @@ class BlogDao {
 	 
 		$spread == 0 && $spread = 1;
 		
-		$query = "select * from tag_cloud order by tag";
+		$query = "select t.tag_name, s.count from tags t inner join (select tag_id, count(*) as count from blog_tag group by tag_id) s on t.tag_id = s.tag_id order by tag_name";
 		$result = mysql_query($query);
 		
 		while($row = mysql_fetch_array($result)) {
 			$size = $minFontSize + ($row['count'] - $minimumCount) * ($maxFontSize - $minFontSize) / $spread;
-			echo "<a href='blog.php?tag=" . $row['tag'] . "' style='font-size:" . floor($size) . "px;'>"
-					. $row['tag'] . "(" . $row['count'] . ")</a>\n";
+			echo "<a href='blog.php?tag=" . $row['tag_name'] . "' style='font-size:" . floor($size) . "px;'>"
+					. $row['tag_name'] . "(" . $row['count'] . ")</a>\n";
 		}
 	}
 	
 	private function getMinimumTagCount() {
-		$minRow = mysql_fetch_array(mysql_query("select min(count) as min from tag_cloud"));
-		return $minRow['min'];
+		$minRow = mysql_fetch_array(mysql_query("select count(*) as count from blog_tag group by tag_id order by count(*)"));
+		return $minRow['count'];
 	}
 	
 	private function getMaximumTagCount() {
-		$maxRow = mysql_fetch_array(mysql_query("select max(count) as max from tag_cloud"));
+		$maxRow = mysql_fetch_array(mysql_query("select count(*) as count from blog_tag group by tag_id order by count(*) desc"));
 		return $maxRow['max'];
 	}
 	
