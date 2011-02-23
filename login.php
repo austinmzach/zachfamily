@@ -34,7 +34,7 @@
 	</span>
 	
 	<br />
-	<?php echo "some stuff here woohooggg"; ?>
+	<?php echo "some stuff here woohook"; ?>
 	<br />
 	<br />
 
